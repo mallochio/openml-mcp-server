@@ -1,0 +1,48 @@
+# pyproject.toml
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "openml-mcp-server" # This is the name on PyPI! Choose carefully.
+version = "0.1.0"          # Increment this for new releases
+description = "An MCP Server to interact with the OpenML API."
+authors = [
+    { name = "Your Name", email = "your@email.com" }, # <-- UPDATE THIS
+]
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.10" # Ensure this matches mcp's requirement
+classifiers = [ # Helps users find your package
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Environment :: Console",
+    "Operating System :: OS Independent",
+]
+keywords = ["mcp", "openml", "llm", "ai", "agent"] # Optional keywords
+
+dependencies = [
+    # Core dependency, no need for [cli] for the *published package*
+    "mcp[cli]>=1.5.0", # Specify a known good version range if needed
+    "httpx>=0.25.0",
+]
+
+# Define entry point for 'uv run openml-mcp-server' or 'python -m openml_mcp_server'
+[project.scripts]
+openml-mcp-server = "openml_mcp_server.__main__:run_server"
+
+[tool.hatch.build.targets.wheel]
+# Tell hatch where your package code is (src layout)
+packages = ["src/openml_mcp_server"]
+
+[dependency-groups]
+dev = [
+    "hatch>=1.14.1",
+    "hatchling>=1.27.0",
+    "twine>=6.1.0",
+]
