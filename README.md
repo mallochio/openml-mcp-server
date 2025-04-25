@@ -6,7 +6,7 @@
 [![Python Versions](https://img.shields.io/pypi/pyversions/openml-mcp-server.svg)](https://pypi.org/project/openml-mcp-server/) <!-- Replace openml-mcp-server -->
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-An MCP (Model Context Protocol) Server that allows AI models and agents (like Claude Desktop) to interact with the public [OpenML API](https://www.openml.org/apis).
+An MCP (Model Context Protocol) server that allows clients (like Claude Desktop) to interact with the public [OpenML API](https://www.openml.org/apis).
 
 This server exposes various OpenML API endpoints as MCP tools, enabling queries for datasets, tasks, flows, runs, and more directly from within an MCP-compatible client.
 
@@ -56,12 +56,11 @@ These instructions explain how to use this server with an MCP client like Claude
                 "openml-mcp-server"
               ],
               "env": {
-                // OPTIONAL: Add your OpenML API Key if needed for private access
-                // Get your key from your OpenML profile page (https://www.openml.org/u)
-                // "OPENML_API_KEY": "YOUR_ACTUAL_OPENML_API_KEY"
+                // Add your OpenML API Key if needed for private access
+                //Get your key from your OpenML profile page (https://www.openml.org/u)
+                "OPENML_API_KEY": "YOUR_ACTUAL_OPENML_API_KEY"
               }
             }
-            // Add other servers here if you have them...
           }
         }
         ```
