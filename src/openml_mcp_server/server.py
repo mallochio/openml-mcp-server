@@ -1,4 +1,3 @@
-# openml_server.py
 import os
 import httpx
 import json
@@ -7,36 +6,27 @@ from typing import List, Dict, Union, Any
 
 from mcp.server.fastmcp import FastMCP
 
-# --- Custom Exceptions ---
 class OpenMLApiError(Exception):
     pass
 
 class OpenMLRequestError(Exception):
     pass
 
-# --- Logging Configuration ---
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
-# --- Configuration ---
-# Use the main OpenML API endpoint
 OPENML_API_BASE = "https://www.openml.org/api/v1/json"
-# Optionally use an API key from environment variables for potentially accessing private items (though most GETs are public)
 OPENML_API_KEY = os.environ.get("OPENML_API_KEY")
 USER_AGENT = "mcp-python-sdk-openml-example/1.0"
 
-# --- MCP Server Initialization ---
 mcp = FastMCP("OpenML Explorer")
 
-# --- Helper Function for API Calls ---
 async def _fetch_openml_data(endpoint: str, params: Dict[str, Any] = None) -> Union[Dict, List, str]:
     """Helper function to fetch data from the OpenML API."""
     if params is None:
         params = {}
-    
-    # Add API key if available
     if OPENML_API_KEY:
         params["api_key"] = OPENML_API_KEY
 
@@ -46,20 +36,15 @@ async def _fetch_openml_data(endpoint: str, params: Dict[str, Any] = None) -> Un
     transport = httpx.AsyncHTTPTransport(retries=3)
     async with httpx.AsyncClient(transport=transport) as client:
         try:
-            logging.debug(f"MCP_DEBUG: Requesting URL: {url} with params: {params}") # Basic logging
+            logging.debug(f"MCP_DEBUG: Requesting URL: {url} with params: {params}")
             response = await client.get(url, params=params, headers=headers, timeout=30.0)
-            response.raise_for_status()  # Raises HTTPStatusError for 4xx/5xx responses
-            
-            # Handle potential empty response body for successful requests (e.g., 204 No Content)
+            response.raise_for_status()
             if response.status_code == 204 or not response.content:
                  return f"Success with status {response.status_code}, but no content returned."
-            
-            # Try to parse JSON, provide raw text on failure
             try:
                 return response.json()
             except json.JSONDecodeError:
-                 return f"Received non-JSON response (status {response.status_code}): {response.text[:500]}" # Limit potentially long responses
-
+                 return f"Received non-JSON response (status {response.status_code}): {response.text[:500]}"
         except httpx.HTTPStatusError as e:
             error_message = f"OpenML API Error {e.response.status_code}"
             try:
@@ -68,26 +53,19 @@ async def _fetch_openml_data(endpoint: str, params: Dict[str, Any] = None) -> Un
                 code = error_data.get('error', {}).get('code', 'N/A')
                 error_message += f" (Code: {code}): {message}"
             except json.JSONDecodeError:
-                error_message += f": {e.response.text[:200]}" # Limit error text
+                error_message += f": {e.response.text[:200]}"
             logging.error(f"MCP_ERROR: {error_message}")
             raise OpenMLApiError(error_message)
-            
         except httpx.RequestError as e:
             error_message = f"HTTP Request Error connecting to OpenML: {e}"
             logging.error(f"MCP_ERROR: {error_message}")
             raise OpenMLRequestError(error_message)
-            
         except Exception as e:
             error_message = f"An unexpected error occurred: {type(e).__name__} - {e}"
             logging.error(f"MCP_ERROR: {error_message}")
             raise OpenMLRequestError(error_message)
 
 
-# --- MCP Tools ---
-
-# --- Data Endpoints ---
-
-# --- Task Endpoints ---
 @mcp.tool()
 async def get_task_description(task_id: int) -> Union[Dict, str]:
     """
@@ -114,7 +92,6 @@ async def list_tasks(filters: str) -> Union[Dict, str]:
     filters = filters.strip('/')
     return await _fetch_openml_data(f"/task/list/{filters}")
 
-# --- Flow Endpoints ---
 @mcp.tool()
 async def get_flow_description(flow_id: int) -> Union[Dict, str]:
     """
@@ -152,7 +129,6 @@ async def check_flow_exists(name: str, version: str) -> Union[Dict, str]:
     """
     return await _fetch_openml_data(f"/flow/exists/{name}/{version}")
 
-# --- Run Endpoints ---
 @mcp.tool()
 async def get_run_description(run_id: int) -> Union[Dict, str]:
     """
@@ -191,7 +167,6 @@ async def get_run_trace(run_id: int) -> Union[Dict, str]:
     """
     return await _fetch_openml_data(f"/run/trace/{run_id}")
 
-# --- Evaluation Endpoints ---
 @mcp.tool()
 async def list_evaluations(filters: str) -> Union[Dict, str]:
     """
@@ -208,7 +183,6 @@ async def list_evaluations(filters: str) -> Union[Dict, str]:
     filters = filters.strip('/')
     return await _fetch_openml_data(f"/evaluation/list/{filters}")
 
-# --- Setup Endpoints ---
 @mcp.tool()
 async def get_setup_description(setup_id: int) -> Union[Dict, str]:
     """
@@ -234,7 +208,6 @@ async def list_setups(filters: str) -> Union[Dict, str]:
     filters = filters.strip('/')
     return await _fetch_openml_data(f"/setup/list/{filters}")
 
-# --- Study Endpoints ---
 @mcp.tool()
 async def get_study_description(study_id_or_alias: str) -> Union[Dict, str]:
     """
@@ -262,7 +235,6 @@ async def list_studies(filters: str) -> Union[Dict, str]:
     return await _fetch_openml_data(f"/study/list/{filters}")
 
 
-# --- Misc Endpoints ---
 @mcp.tool()
 async def list_task_types() -> Union[Dict, str]:
     """
@@ -293,15 +265,3 @@ async def list_estimation_procedures() -> Union[Dict, str]:
     List all estimation procedures supported by OpenML (e.g., 10-fold Crossvalidation).
     """
     return await _fetch_openml_data("/estimationprocedure/list")
-
-
-# --- Run the server ---
-# if __name__ == "__main__":
-#     print("Starting OpenML MCP Server...")
-#     print(f"Using OpenML API Base: {OPENML_API_BASE}")
-#     if OPENML_API_KEY:
-#         print("Using OpenML API Key from environment variable.")
-#     else:
-#         print("No OpenML API Key found in environment (OPENML_API_KEY). Public access only.")
-#     # Run the server using stdio transport by default
-#     mcp.run()
