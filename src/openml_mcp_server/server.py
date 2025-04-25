@@ -2,9 +2,23 @@
 import os
 import httpx
 import json
+import logging
 from typing import List, Dict, Union, Any
 
 from mcp.server.fastmcp import FastMCP
+
+# --- Custom Exceptions ---
+class OpenMLApiError(Exception):
+    pass
+
+class OpenMLRequestError(Exception):
+    pass
+
+# --- Logging Configuration ---
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
 
 # --- Configuration ---
 # Use the main OpenML API endpoint
@@ -29,9 +43,10 @@ async def _fetch_openml_data(endpoint: str, params: Dict[str, Any] = None) -> Un
     headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
     url = f"{OPENML_API_BASE}{endpoint}"
 
-    async with httpx.AsyncClient() as client:
+    transport = httpx.AsyncHTTPTransport(retries=3)
+    async with httpx.AsyncClient(transport=transport) as client:
         try:
-            print(f"MCP_DEBUG: Requesting URL: {url} with params: {params}") # Basic logging
+            logging.debug(f"MCP_DEBUG: Requesting URL: {url} with params: {params}") # Basic logging
             response = await client.get(url, params=params, headers=headers, timeout=30.0)
             response.raise_for_status()  # Raises HTTPStatusError for 4xx/5xx responses
             
@@ -54,76 +69,23 @@ async def _fetch_openml_data(endpoint: str, params: Dict[str, Any] = None) -> Un
                 error_message += f" (Code: {code}): {message}"
             except json.JSONDecodeError:
                 error_message += f": {e.response.text[:200]}" # Limit error text
-            print(f"MCP_ERROR: {error_message}")
-            return error_message # Return error string for MCP tool result
+            logging.error(f"MCP_ERROR: {error_message}")
+            raise OpenMLApiError(error_message)
             
         except httpx.RequestError as e:
             error_message = f"HTTP Request Error connecting to OpenML: {e}"
-            print(f"MCP_ERROR: {error_message}")
-            return error_message
+            logging.error(f"MCP_ERROR: {error_message}")
+            raise OpenMLRequestError(error_message)
             
         except Exception as e:
             error_message = f"An unexpected error occurred: {type(e).__name__} - {e}"
-            print(f"MCP_ERROR: {error_message}")
-            return error_message
+            logging.error(f"MCP_ERROR: {error_message}")
+            raise OpenMLRequestError(error_message)
 
 
 # --- MCP Tools ---
 
 # --- Data Endpoints ---
-@mcp.tool()
-async def get_dataset_description(dataset_id: int) -> Union[Dict, str]:
-    """
-    Get the description for a specific OpenML dataset by its ID.
-    Contains all the meta-data about the dataset.
-
-    Args:
-        dataset_id: The integer ID of the dataset.
-    """
-    return await _fetch_openml_data(f"/data/{dataset_id}")
-
-@mcp.tool()
-async def list_datasets(filters: str) -> Union[Dict, str]:
-    """
-    List OpenML datasets, applying filters specified as part of the path.
-    Example filters: 'limit/10/offset/0', 'status/active/tag/uci', 'number_instances/0..1000'.
-    See OpenML API docs for detailed filter syntax.
-
-    Args:
-        filters: The filter string (e.g., 'limit/10/offset/0', 'status/active').
-    """
-    if not filters:
-        return "Please provide filters. Example: 'limit/10/offset/0'"
-    # Basic sanitation: remove leading/trailing slashes if present
-    filters = filters.strip('/')
-    return await _fetch_openml_data(f"/data/list/{filters}")
-
-@mcp.tool()
-async def get_dataset_features(dataset_id: int) -> Union[Dict, str]:
-    """
-    Get the features (attributes/columns) description for a specific OpenML dataset.
-
-    Args:
-        dataset_id: The integer ID of the dataset.
-    """
-    return await _fetch_openml_data(f"/data/features/{dataset_id}")
-
-@mcp.tool()
-async def get_dataset_qualities(dataset_id: int) -> Union[Dict, str]:
-    """
-    Get the calculated qualities (meta-features) for a specific OpenML dataset.
-
-    Args:
-        dataset_id: The integer ID of the dataset.
-    """
-    return await _fetch_openml_data(f"/data/qualities/{dataset_id}")
-
-@mcp.tool()
-async def list_data_qualities() -> Union[Dict, str]:
-    """
-    List all available data quality measures supported by OpenML.
-    """
-    return await _fetch_openml_data("/data/qualities/list")
 
 # --- Task Endpoints ---
 @mcp.tool()

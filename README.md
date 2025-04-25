@@ -1,3 +1,5 @@
+⛑️ Work in Progress!
+
 # OpenML MCP Server
 
 [![PyPI](https://img.shields.io/pypi/v/openml-mcp-server.svg)](https://pypi.org/project/openml-mcp-server/) <!-- Replace openml-mcp-server with your actual PyPI name -->
@@ -84,6 +86,14 @@ These instructions explain how to use this server with an MCP client like Claude
 ## Development
 
 See the [Testing Instructions](#testing-instructions-for-developers) below.
+
+## Running Tests
+
+To run the test suite (requires `pytest` and `pytest-asyncio`):
+
+```bash
+uv run pytest
+```
 
 ## License
 

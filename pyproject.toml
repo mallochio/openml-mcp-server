@@ -9,7 +9,7 @@ name = "openml-mcp-server" # This is the name on PyPI! Choose carefully.
 version = "0.1.0"          # Increment this for new releases
 description = "An MCP Server to interact with the OpenML API."
 authors = [
-    { name = "Your Name", email = "your@email.com" }, # <-- UPDATE THIS
+    { name = "mallochio" }
 ]
 license = { text = "MIT" }
 readme = "README.md"
@@ -45,4 +45,6 @@ dev = [
     "hatch>=1.14.1",
     "hatchling>=1.27.0",
     "twine>=6.1.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0"
 ]
