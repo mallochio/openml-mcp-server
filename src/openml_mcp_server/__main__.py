@@ -1,5 +1,6 @@
 import sys
-from .server import mcp 
+from .server import mcp
+
 
 def run_server():
     """Runs the MCP server."""
@@ -8,7 +9,9 @@ def run_server():
     # Example: OPENML_API_KEY = os.environ.get("OPENML_API_KEY")
     # You might want to add logic here to pass config to your server setup if necessary
     from .tools import data  # Registers dataset tools
-    mcp.run() 
+
+    mcp.run()
+
 
 if __name__ == "__main__":
     run_server()

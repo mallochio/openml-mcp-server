@@ -1,6 +1,7 @@
 from ..server import mcp, _fetch_openml_data
 from typing import Dict, Union
 
+
 @mcp.tool()
 async def get_dataset_description(dataset_id: int) -> Union[Dict, str]:
     """
@@ -11,6 +12,7 @@ async def get_dataset_description(dataset_id: int) -> Union[Dict, str]:
         dataset_id: The integer ID of the dataset.
     """
     return await _fetch_openml_data(f"/data/{dataset_id}")
+
 
 @mcp.tool()
 async def list_datasets(filters: str) -> Union[Dict, str]:
@@ -24,8 +26,9 @@ async def list_datasets(filters: str) -> Union[Dict, str]:
     """
     if not filters:
         return "Please provide filters. Example: 'limit/10/offset/0'"
-    filters = filters.strip('/')
+    filters = filters.strip("/")
     return await _fetch_openml_data(f"/data/list/{filters}")
+
 
 @mcp.tool()
 async def get_dataset_features(dataset_id: int) -> Union[Dict, str]:
@@ -37,6 +40,7 @@ async def get_dataset_features(dataset_id: int) -> Union[Dict, str]:
     """
     return await _fetch_openml_data(f"/data/features/{dataset_id}")
 
+
 @mcp.tool()
 async def get_dataset_qualities(dataset_id: int) -> Union[Dict, str]:
     """
@@ -46,6 +50,7 @@ async def get_dataset_qualities(dataset_id: int) -> Union[Dict, str]:
         dataset_id: The integer ID of the dataset.
     """
     return await _fetch_openml_data(f"/data/qualities/{dataset_id}")
+
 
 @mcp.tool()
 async def list_data_qualities() -> Union[Dict, str]:

@@ -1,7 +1,8 @@
 # Byte-compiled / optimized / DLL files
-__pycache__/
+*/__pycache__/*
 *.py[cod]
 *$py.class
+*.pyc
 
 # C extensions
 *.so
@@ -37,7 +38,9 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Unit test / coverage reports
+# Unit test / coverage reports / Test artifacts
+# Note: Test source code (e.g., tests/ directory, test_*.py files) should usually NOT be ignored.
+# This section ignores test outputs, caches, reports, and virtual environments.
 htmlcov/
 .tox/
 .nox/
@@ -92,3 +95,6 @@ venv.bak/
 
 # Folders
 memory-bank/
+
+
+""
